@@ -1,0 +1,246 @@
+.aurora-page {
+  position: relative;
+  overflow: hidden;
+
+  /* Deep green-black base */
+  background:
+    radial-gradient(
+      circle at 50% 100%,
+      #063b2a 0%,
+      #021b14 35%,
+      #010b08 75%,
+      #000504 100%
+    );
+
+  isolation: isolate;
+}
+
+
+/* =========================================
+   AURORA BACKGROUND LAYER
+   ========================================= */
+
+.aurora-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+
+/* =========================================
+   AURORA LIGHTS
+   ========================================= */
+
+.aurora {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(70px);
+  opacity: 0.75;
+  will-change: transform;
+}
+
+
+/* Main emerald Aurora */
+
+.aurora-1 {
+  width: 80%;
+  height: 45%;
+  top: -10%;
+  left: 10%;
+
+  background:
+    linear-gradient(
+      115deg,
+      transparent 5%,
+      rgba(0, 255, 170, 0.15) 20%,
+      rgba(0, 255, 140, 0.55) 40%,
+      rgba(50, 255, 180, 0.3) 60%,
+      transparent 85%
+    );
+
+  transform: rotate(-12deg);
+
+  animation:
+    aurora-main 12s ease-in-out infinite alternate;
+}
+
+
+/* Left green glow */
+
+.aurora-2 {
+  width: 50%;
+  height: 65%;
+  left: -15%;
+  top: 20%;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(0, 255, 170, 0.45) 0%,
+      rgba(0, 200, 130, 0.25) 35%,
+      transparent 70%
+    );
+
+  animation:
+    aurora-left 15s ease-in-out infinite alternate;
+}
+
+
+/* Right emerald glow */
+
+.aurora-3 {
+  width: 55%;
+  height: 55%;
+  right: -15%;
+  bottom: -5%;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(147, 255, 172, 0.35) 0%,
+      rgba(0, 180, 100, 0.2) 40%,
+      transparent 70%
+    );
+
+  animation:
+    aurora-right 17s ease-in-out infinite alternate;
+}
+
+
+/* =========================================
+   LOGIN / SIGNUP CARD
+   ========================================= */
+
+.auth-card {
+  position: relative;
+  z-index: 10;
+
+  background: rgba(255, 255, 255, 0.98);
+}
+
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+
+@keyframes aurora-main {
+
+  0% {
+    transform:
+      translateX(-8%)
+      translateY(-3%)
+      rotate(-12deg)
+      scale(1);
+  }
+
+  50% {
+    transform:
+      translateX(5%)
+      translateY(8%)
+      rotate(-7deg)
+      scale(1.08);
+  }
+
+  100% {
+    transform:
+      translateX(-2%)
+      translateY(15%)
+      rotate(-15deg)
+      scale(1.15);
+  }
+}
+
+
+@keyframes aurora-left {
+
+  0% {
+    transform:
+      translateX(0)
+      translateY(0)
+      scale(1);
+  }
+
+  50% {
+    transform:
+      translateX(15%)
+      translateY(-8%)
+      scale(1.15);
+  }
+
+  100% {
+    transform:
+      translateX(25%)
+      translateY(10%)
+      scale(1.25);
+  }
+}
+
+
+@keyframes aurora-right {
+
+  0% {
+    transform:
+      translateX(0)
+      translateY(0)
+      scale(1);
+  }
+
+  50% {
+    transform:
+      translateX(-15%)
+      translateY(-10%)
+      scale(1.15);
+  }
+
+  100% {
+    transform:
+      translateX(-25%)
+      translateY(5%)
+      scale(1.25);
+  }
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 640px) {
+
+  .aurora {
+    filter: blur(25px);
+  }
+
+  .aurora-1 {
+    width: 120%;
+    height: 40%;
+    left: -10%;
+  }
+
+  .aurora-2 {
+    width: 80%;
+    height: 60%;
+    left: -30%;
+  }
+
+  .aurora-3 {
+    width: 80%;
+    height: 50%;
+    right: -30%;
+  }
+}
+
+
+/* =========================================
+   REDUCE MOTION ACCESSIBILITY
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .aurora {
+    animation: none;
+  }
+}
