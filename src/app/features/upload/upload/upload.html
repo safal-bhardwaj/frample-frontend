@@ -1,5 +1,85 @@
-<!-- upload.html -->
 <app-navbar />
-<div class="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-  <h1 class="text-2xl font-semibold text-gray-900">Upload page coming soon</h1>
+<div class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
+  <div class="w-full max-w-lg bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+    <h1 class="text-2xl font-semibold text-gray-900 mb-6">Upload a sample</h1>
+
+    @if (errorMessage()) {
+      <div class="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <div class="mb-5">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Audio file</label>
+      <input type="file" accept="audio/*" (change)="onFileSelected($event)"
+             class="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:text-sm" />
+      @if (selectedFile()) {
+        <p class="text-xs text-gray-500 mt-1">{{ selectedFile()!.name }} ({{ (selectedFile()!.size / 1024 / 1024).toFixed(2) }} MB)</p>
+      }
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+        <input formControlName="title" type="text"
+               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <textarea formControlName="description" rows="3"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">BPM</label>
+          <input formControlName="bpm" type="number"
+                 class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <select formControlName="sampleType"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">—</option>
+            <option value="INSTRUMENTAL">Instrumental</option>
+            <option value="VOCAL">Vocal</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Key</label>
+          <input formControlName="musicalKey" type="text" placeholder="e.g. C, F#"
+                 class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Scale</label>
+          <select formControlName="scale"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">—</option>
+            <option value="MAJOR">Major</option>
+            <option value="MINOR">Minor</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Time sig.</label>
+          <input formControlName="timeSignature" type="text" placeholder="4/4"
+                 class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Genre</label>
+        <input formControlName="genre" type="text"
+               class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <button type="submit" [disabled]="!selectedFile() || form.invalid || isUploading()"
+              class="w-full bg-blue-600 text-white rounded-lg py-2 text-sm font-medium disabled:opacity-50">
+        {{ isUploading() ? uploadProgress() : 'Upload sample' }}
+      </button>
+    </form>
+  </div>
 </div>

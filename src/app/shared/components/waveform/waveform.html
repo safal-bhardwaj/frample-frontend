@@ -1,0 +1,8 @@
+<div class="flex items-center gap-[2px] h-10 w-full cursor-pointer" (click)="onClick($event)">
+  @for (bar of bars(); track $index) {
+    <div class="flex-1 rounded-sm"
+         [style.height.%]="bar"
+         [style.background-color]="($index / bars().length) < progress() ? '#39E6A0' : '#FFFFFF'">
+    </div>
+  }
+</div>

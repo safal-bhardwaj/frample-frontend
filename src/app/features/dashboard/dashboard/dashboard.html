@@ -1,4 +1,65 @@
 <app-navbar />
-<div class="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-  <h1 class="text-2xl font-semibold text-gray-900">You're logged in 🎉</h1>
+<div class="min-h-[calc(100vh-4rem)] bg-neutral-950">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-semibold text-white mb-6">Browse samples</h1>
+
+    @if (isLoading()) {
+      <p class="text-sm text-neutral-400">Loading samples...</p>
+    } @else if (errorMessage()) {
+      <p class="text-sm text-red-400">{{ errorMessage() }}</p>
+    } @else if (samples().length === 0) {
+      <p class="text-sm text-neutral-400">No samples uploaded yet. Be the first!</p>
+    } @else {
+      <div class="border-y border-neutral-800 divide-y divide-neutral-800">
+        @for (sample of samples(); track sample.sampleId) {
+          <div class="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-2 px-3 py-3 transition-colors hover:bg-neutral-900"
+               [class.bg-neutral-900]="isCurrent(sample)">
+
+            <!-- Play / pause (keeps the green accent) -->
+            <button type="button" (click)="player.toggle(sample)"
+                    class="shrink-0 w-10 h-10 rounded-full border border-[#1B5A43] text-[#39E6A0] flex items-center justify-center hover:bg-[#0C241B]"
+                    [class.animate-pulse]="player.isLoading() && isCurrent(sample)"
+                    [attr.aria-label]="isPlaying(sample) ? 'Pause' : 'Play'">
+              @if (isPlaying(sample)) {
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+              } @else {
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+              }
+            </button>
+
+            <!-- Title + tags -->
+            <div class="flex-1 md:flex-none md:w-56 min-w-0" [attr.title]="sample.description">
+              <p class="text-sm text-white truncate">{{ sample.title }}</p>
+              <div class="flex gap-2 text-xs text-neutral-400 truncate">
+                <span>by {{ sample.uploaderUsername }}</span>
+                @if (sample.genre) { <span>· {{ sample.genre }}</span> }
+                @if (sample.sampleType) { <span>· {{ sample.sampleType === 'VOCAL' ? 'Vocal' : 'Instrumental' }}</span> }
+              </div>
+            </div>
+
+            <!-- Waveform (keeps the green accent) -->
+            <div class="order-last w-full md:order-none md:w-auto md:flex-1 min-w-0">
+              <app-waveform [peaks]="sample.peaks"
+                            [progress]="progressOf(sample)"
+                            [active]="isCurrent(sample)"
+                            (seek)="player.seek(sample, $event)" />
+            </div>
+
+            <!-- Details -->
+            <span class="shrink-0 w-12 text-sm text-neutral-300">{{ formatDuration(sample.durationSeconds) }}</span>
+            <span class="hidden md:block shrink-0 w-12 text-sm text-center text-neutral-300">{{ keyLabel(sample) }}</span>
+            <span class="hidden md:block shrink-0 w-12 text-sm text-center text-neutral-300">{{ sample.bpm ?? '--' }}</span>
+
+            <!-- Download -->
+            <button type="button" (click)="download(sample)" aria-label="Download"
+                    class="shrink-0 w-9 h-9 rounded-full text-neutral-300 hover:text-white hover:bg-neutral-800 flex items-center justify-center">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
 </div>
