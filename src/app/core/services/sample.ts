@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
@@ -7,7 +7,9 @@ import {
   SaveSampleRequest,
   SampleDto,
   PageResponse,
-  MediaUrlResponse
+  MediaUrlResponse,
+  SampleFilters,
+  UpdateSampleRequest
 } from '../models/sample.models';
 
 @Injectable({ providedIn: 'root' })
@@ -34,9 +36,15 @@ export class Sample {
     return this.http.post<SampleDto>(this.baseUrl, request);
   }
 
-  getSamples(page: number = 0, size: number = 20): Observable<PageResponse<SampleDto>> {
-    return this.http.get<PageResponse<SampleDto>>(`${this.baseUrl}?page=${page}&size=${size}`);
+getSamples(page = 0, size = 20, filters: SampleFilters = {}): Observable<PageResponse<SampleDto>> {
+  let params = new HttpParams().set('page', page).set('size', size);
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== null && value !== '') {
+      params = params.set(key, String(value));
+    }
   }
+  return this.http.get<PageResponse<SampleDto>>(this.baseUrl, { params });
+}
 
   async analyzeAudio(file: File, barCount = 100): Promise<{ durationSeconds: number; peaks: number[] }> {
   const ctx = new AudioContext();
@@ -70,5 +78,16 @@ export class Sample {
 
 getDownloadUrl(sampleId: number): Observable<MediaUrlResponse> {
   return this.http.get<MediaUrlResponse>(`${this.baseUrl}/${sampleId}/download`);
+}
+getMySamples(page = 0, size = 20): Observable<PageResponse<SampleDto>> {
+  return this.http.get<PageResponse<SampleDto>>(`${this.baseUrl}/mine`, { params: { page, size } });
+}
+
+updateSample(sampleId: number, request: UpdateSampleRequest): Observable<SampleDto> {
+  return this.http.put<SampleDto>(`${this.baseUrl}/${sampleId}`, request);
+}
+
+deleteSample(sampleId: number): Observable<void> {
+  return this.http.delete<void>(`${this.baseUrl}/${sampleId}`);
 }
 }

@@ -3,19 +3,68 @@
   <div class="max-w-6xl mx-auto px-4 py-8">
     <h1 class="text-2xl font-semibold text-white mb-6">Browse samples</h1>
 
-    @if (isLoading()) {
-      <p class="text-sm text-neutral-400">Loading samples...</p>
-    } @else if (errorMessage()) {
+    <!-- Search + filters -->
+    <form [formGroup]="filterForm" class="flex flex-wrap items-center gap-3 mb-6">
+      <input formControlName="q" type="search" placeholder="Search by title or uploader"
+             class="flex-1 min-w-[200px] bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600" />
+
+      <input formControlName="genre" type="text" placeholder="Genre"
+             class="w-32 bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600" />
+
+      <select formControlName="sampleType"
+              class="bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600 [color-scheme:dark]">
+        <option value="">Any type</option>
+        <option value="INSTRUMENTAL">Instrumental</option>
+        <option value="VOCAL">Vocal</option>
+      </select>
+
+      <select formControlName="musicalKey"
+              class="bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600 [color-scheme:dark]">
+        <option value="">Any key</option>
+        @for (k of keys; track k) {
+          <option [value]="k">{{ k }}</option>
+        }
+      </select>
+
+      <select formControlName="scale"
+              class="bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600 [color-scheme:dark]">
+        <option value="">Any scale</option>
+        <option value="MAJOR">Major</option>
+        <option value="MINOR">Minor</option>
+      </select>
+
+      <input formControlName="bpmMin" type="number" placeholder="BPM min"
+             class="w-24 bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600" />
+      <input formControlName="bpmMax" type="number" placeholder="BPM max"
+             class="w-24 bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600" />
+
+      @if (hasActiveFilters()) {
+        <button type="button" (click)="clearFilters()" class="text-sm text-neutral-400 hover:text-white">
+          Clear
+        </button>
+      }
+    </form>
+
+    @if (errorMessage()) {
       <p class="text-sm text-red-400">{{ errorMessage() }}</p>
+    } @else if (isLoading() && samples().length === 0) {
+      <p class="text-sm text-neutral-400">Loading samples...</p>
     } @else if (samples().length === 0) {
-      <p class="text-sm text-neutral-400">No samples uploaded yet. Be the first!</p>
+      <p class="text-sm text-neutral-400">
+        {{ hasActiveFilters() ? 'No samples match your filters.' : 'No samples uploaded yet. Be the first!' }}
+      </p>
     } @else {
-      <div class="border-y border-neutral-800 divide-y divide-neutral-800">
+      <p class="text-xs text-neutral-500 mb-3">
+        {{ totalElements() }} {{ totalElements() === 1 ? 'sample' : 'samples' }}
+      </p>
+
+      <div class="border-y border-neutral-800 divide-y divide-neutral-800 transition-opacity"
+           [class.opacity-60]="isLoading()">
         @for (sample of samples(); track sample.sampleId) {
           <div class="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-2 px-3 py-3 transition-colors hover:bg-neutral-900"
                [class.bg-neutral-900]="isCurrent(sample)">
 
-            <!-- Play / pause (keeps the green accent) -->
+            <!-- Play / pause -->
             <button type="button" (click)="player.toggle(sample)"
                     class="shrink-0 w-10 h-10 rounded-full border border-[#1B5A43] text-[#39E6A0] flex items-center justify-center hover:bg-[#0C241B]"
                     [class.animate-pulse]="player.isLoading() && isCurrent(sample)"
@@ -37,7 +86,7 @@
               </div>
             </div>
 
-            <!-- Waveform (keeps the green accent) -->
+            <!-- Waveform -->
             <div class="order-last w-full md:order-none md:w-auto md:flex-1 min-w-0">
               <app-waveform [peaks]="sample.peaks"
                             [progress]="progressOf(sample)"
@@ -60,6 +109,15 @@
           </div>
         }
       </div>
+
+      @if (!isLast()) {
+        <div class="flex justify-center mt-6">
+          <button type="button" (click)="loadMore()" [disabled]="isLoadingMore()"
+                  class="px-5 py-2 text-sm text-neutral-300 border border-neutral-800 rounded-lg hover:bg-neutral-900 hover:text-white disabled:opacity-50">
+            {{ isLoadingMore() ? 'Loading...' : 'Load more' }}
+          </button>
+        </div>
+      }
     }
   </div>
 </div>

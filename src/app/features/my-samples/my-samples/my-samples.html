@@ -1,0 +1,184 @@
+<app-navbar />
+<div class="min-h-[calc(100vh-4rem)] bg-neutral-950">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-semibold text-white">My uploads</h1>
+        @if (!isLoading() && !errorMessage()) {
+          <p class="text-xs text-neutral-500 mt-1">
+            {{ totalElements() }} {{ totalElements() === 1 ? 'sample' : 'samples' }}
+          </p>
+        }
+      </div>
+      <a routerLink="/upload"
+         class="px-4 py-2 text-sm rounded-lg border border-neutral-800 text-neutral-300 hover:bg-neutral-900 hover:text-white">
+        Upload new
+      </a>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="text-sm text-red-400">{{ errorMessage() }}</p>
+    } @else if (isLoading()) {
+      <p class="text-sm text-neutral-400">Loading your uploads...</p>
+    } @else if (samples().length === 0) {
+      <p class="text-sm text-neutral-400">
+        You haven't uploaded anything yet.
+        <a routerLink="/upload" class="text-white underline">Upload your first sample</a>
+      </p>
+    } @else {
+      <div class="border-y border-neutral-800 divide-y divide-neutral-800">
+        @for (sample of samples(); track sample.sampleId) {
+          <div class="flex flex-wrap md:flex-nowrap items-center gap-x-6 gap-y-3 px-3 py-4">
+
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-white truncate">{{ sample.title }}</p>
+              <div class="flex flex-wrap gap-2 mt-1 text-xs text-neutral-400">
+                @if (sample.genre) { <span class="px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800">{{ sample.genre }}</span> }
+                @if (sample.sampleType) { <span class="px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800">{{ sample.sampleType === 'VOCAL' ? 'Vocal' : 'Instrumental' }}</span> }
+                @if (sample.musicalKey) { <span class="px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800">{{ keyLabel(sample) }}</span> }
+                @if (sample.bpm) { <span class="px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800">{{ sample.bpm }} BPM</span> }
+              </div>
+            </div>
+
+            <div class="flex gap-5 text-xs text-neutral-400 shrink-0">
+              <span>{{ sample.playCount }} plays</span>
+              <span>{{ sample.downloadCount }} downloads</span>
+              <span class="hidden md:inline">{{ sample.createdDttm | date:'mediumDate' }}</span>
+            </div>
+
+            <div class="flex gap-2 shrink-0">
+              <button type="button" (click)="openEdit(sample)"
+                      class="px-3 py-1.5 text-sm rounded-lg border border-neutral-800 text-neutral-300 hover:bg-neutral-900 hover:text-white">
+                Edit
+              </button>
+              <button type="button" (click)="openDelete(sample)"
+                      class="px-3 py-1.5 text-sm rounded-lg border border-neutral-800 text-red-400 hover:bg-neutral-900 hover:text-red-300">
+                Delete
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (!isLast()) {
+        <div class="flex justify-center mt-6">
+          <button type="button" (click)="loadMore()" [disabled]="isLoadingMore()"
+                  class="px-5 py-2 text-sm text-neutral-300 border border-neutral-800 rounded-lg hover:bg-neutral-900 hover:text-white disabled:opacity-50">
+            {{ isLoadingMore() ? 'Loading...' : 'Load more' }}
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Edit modal -->
+@if (editing()) {
+  <div class="fixed inset-0 z-20 bg-black/70 flex items-center justify-center p-4" (click)="closeEdit()">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-neutral-900 border border-neutral-800 rounded-xl p-6"
+         (click)="$event.stopPropagation()">
+      <h2 class="text-lg font-semibold text-white mb-4">Edit sample</h2>
+
+      @if (modalError()) {
+        <div class="mb-4 text-sm text-red-400 bg-red-950/40 border border-red-900 rounded-lg px-3 py-2">{{ modalError() }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="saveEdit()" class="space-y-4">
+        <div>
+          <label class="block text-sm text-neutral-300 mb-1">Title</label>
+          <input formControlName="title" type="text"
+                 class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600" />
+        </div>
+
+        <div>
+          <label class="block text-sm text-neutral-300 mb-1">Description</label>
+          <textarea formControlName="description" rows="3"
+                    class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-neutral-300 mb-1">BPM</label>
+            <input formControlName="bpm" type="number"
+                   class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600" />
+          </div>
+          <div>
+            <label class="block text-sm text-neutral-300 mb-1">Type</label>
+            <select formControlName="sampleType"
+                    class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600 [color-scheme:dark]">
+              <option value="">—</option>
+              <option value="INSTRUMENTAL">Instrumental</option>
+              <option value="VOCAL">Vocal</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm text-neutral-300 mb-1">Key</label>
+            <select formControlName="musicalKey"
+                    class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600 [color-scheme:dark]">
+              <option value="">—</option>
+              @for (k of keys; track k) {
+                <option [value]="k">{{ k }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-neutral-300 mb-1">Scale</label>
+            <select formControlName="scale"
+                    class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600 [color-scheme:dark]">
+              <option value="">—</option>
+              <option value="MAJOR">Major</option>
+              <option value="MINOR">Minor</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-neutral-300 mb-1">Time sig.</label>
+            <input formControlName="timeSignature" type="text" placeholder="4/4"
+                   class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm text-neutral-300 mb-1">Genre</label>
+          <input formControlName="genre" type="text"
+                 class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600" />
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" (click)="closeEdit()" class="px-4 py-2 text-sm text-neutral-400 hover:text-white">Cancel</button>
+          <button type="submit" [disabled]="form.invalid || isBusy()"
+                  class="px-4 py-2 text-sm rounded-lg bg-white text-black font-medium disabled:opacity-50">
+            {{ isBusy() ? 'Saving...' : 'Save changes' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Delete confirmation -->
+@if (deleting()) {
+  <div class="fixed inset-0 z-20 bg-black/70 flex items-center justify-center p-4" (click)="closeDelete()">
+    <div class="w-full max-w-sm bg-neutral-900 border border-neutral-800 rounded-xl p-6" (click)="$event.stopPropagation()">
+      <h2 class="text-lg font-semibold text-white mb-2">Delete this sample?</h2>
+      <p class="text-sm text-neutral-400 mb-4">
+        "{{ deleting()!.title }}" and its audio file will be permanently removed. This can't be undone.
+      </p>
+
+      @if (modalError()) {
+        <div class="mb-4 text-sm text-red-400">{{ modalError() }}</div>
+      }
+
+      <div class="flex justify-end gap-3">
+        <button type="button" (click)="closeDelete()" class="px-4 py-2 text-sm text-neutral-400 hover:text-white">Cancel</button>
+        <button type="button" (click)="confirmDelete()" [disabled]="isBusy()"
+                class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white font-medium hover:bg-red-500 disabled:opacity-50">
+          {{ isBusy() ? 'Deleting...' : 'Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

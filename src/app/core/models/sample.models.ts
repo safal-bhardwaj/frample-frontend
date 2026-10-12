@@ -57,3 +57,25 @@ export interface PageResponse<T> {
 export interface MediaUrlResponse {
   url: string;
 }
+export const MUSICAL_KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const;
+
+export interface SampleFilters {
+  q?: string;
+  genre?: string;
+  sampleType?: SampleType;
+  musicalKey?: string;
+  scale?: Scale;
+  bpmMin?: number;
+  bpmMax?: number;
+}
+
+export interface UpdateSampleRequest {
+  title: string;
+  description?: string;
+  bpm?: number;
+  sampleType?: SampleType;
+  musicalKey?: string;
+  scale?: Scale;
+  timeSignature?: string;
+  genre?: string;
+}

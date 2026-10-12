@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Navbar } from '../../../shared/components/navbar/navbar';
 import { Sample } from '../../../core/services/sample';
 import { firstValueFrom } from 'rxjs';
+import { MUSICAL_KEYS } from '../../../core/models/sample.models';
 
 @Component({
   selector: 'app-upload',
@@ -16,7 +17,7 @@ export class Upload {
   private fb = inject(FormBuilder);
   private sampleService = inject(Sample);
   private router = inject(Router);
-
+  keys = MUSICAL_KEYS;  
   selectedFile = signal<File | null>(null);
   isUploading = signal(false);
   errorMessage = signal<string | null>(null);

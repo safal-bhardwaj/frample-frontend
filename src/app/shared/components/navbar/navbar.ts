@@ -39,4 +39,8 @@ export class Navbar {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+  onMyUploads(): void {
+  this.isDropdownOpen.set(false);
+  this.router.navigate(['/my-samples']);
+}
 }

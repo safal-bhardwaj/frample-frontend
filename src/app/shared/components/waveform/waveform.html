@@ -1,8 +1,18 @@
-<div class="flex items-center gap-[2px] h-10 w-full cursor-pointer" (click)="onClick($event)">
-  @for (bar of bars(); track $index) {
-    <div class="flex-1 rounded-sm"
-         [style.height.%]="bar"
-         [style.background-color]="($index / bars().length) < progress() ? '#39E6A0' : '#FFFFFF'">
-    </div>
-  }
+<div class="relative h-10 w-full cursor-pointer" (click)="onClick($event)">
+
+  <!-- Base layer: white bars -->
+  <div class="absolute inset-0 flex items-center gap-[2px]">
+    @for (bar of bars(); track $index) {
+      <div class="flex-1 rounded-sm bg-white" [style.height.%]="bar"></div>
+    }
+  </div>
+
+  <!-- Overlay: the same bars in green, revealed left to right by clipping -->
+  <div class="absolute inset-0 flex items-center gap-[2px] pointer-events-none"
+       [style.clip-path]="clipPath()">
+    @for (bar of bars(); track $index) {
+      <div class="flex-1 rounded-sm bg-[#39E6A0]" [style.height.%]="bar"></div>
+    }
+  </div>
+
 </div>

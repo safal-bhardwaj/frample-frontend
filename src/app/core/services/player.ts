@@ -6,6 +6,7 @@ import { SampleDto } from '../models/sample.models';
 export class Player {
   private sampleService = inject(Sample);
   private audio = new Audio();
+  private rafId: number | null = null;
 
   currentSample = signal<SampleDto | null>(null);
   isPlaying = signal(false);
@@ -13,16 +14,22 @@ export class Player {
   progress = signal(0); // 0..1
 
   constructor() {
-    this.audio.addEventListener('timeupdate', () => {
-      const d = this.audio.duration;
-      this.progress.set(d ? this.audio.currentTime / d : 0);
+    this.audio.addEventListener('play', () => {
+      this.isPlaying.set(true);
+      this.startTicking();
     });
-    this.audio.addEventListener('play', () => this.isPlaying.set(true));
-    this.audio.addEventListener('pause', () => this.isPlaying.set(false));
+    this.audio.addEventListener('pause', () => {
+      this.isPlaying.set(false);
+      this.stopTicking();
+      this.syncProgress();
+    });
     this.audio.addEventListener('ended', () => {
       this.isPlaying.set(false);
+      this.stopTicking();
       this.progress.set(0);
     });
+    // Covers clicking the waveform to seek while paused (no animation loop running then)
+    this.audio.addEventListener('seeked', () => this.syncProgress());
   }
 
   toggle(sample: SampleDto): void {
@@ -53,6 +60,29 @@ export class Player {
     this.isPlaying.set(false);
     this.isLoading.set(false);
     this.progress.set(0);
+  }
+
+  private syncProgress(): void {
+    const d = this.audio.duration;
+    this.progress.set(d ? this.audio.currentTime / d : 0);
+  }
+
+  // Reads the playhead every animation frame (~60x/sec) instead of waiting for the
+  // browser's coarse timeupdate event (~4x/sec), which is what made the color jump.
+  private startTicking(): void {
+    if (this.rafId !== null) return;
+    const tick = () => {
+      this.syncProgress();
+      this.rafId = requestAnimationFrame(tick);
+    };
+    this.rafId = requestAnimationFrame(tick);
+  }
+
+  private stopTicking(): void {
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
   }
 
   private load(sample: SampleDto): void {
