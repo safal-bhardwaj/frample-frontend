@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, of , timeout} from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginRequest, SignupRequest, TokenResponse, AppUser,GoogleLoginRequest } from '../models/auth.models';
 
@@ -32,14 +32,15 @@ export class AuthService {
     );
   }
 
-  restoreSession(): Observable<TokenResponse | null> {
-    return this.refresh().pipe(
-      catchError(() => {
-        this.clearLocalState();
-        return of(null);
-      })
-    );
-  }
+ restoreSession(): Observable<TokenResponse | null> {
+  return this.refresh().pipe(
+    timeout(5000),   // don't block the whole app while a sleeping backend wakes up
+    catchError(() => {
+      this.clearLocalState();
+      return of(null);
+    })
+  );
+}
 
   logout(): void {
     this.http.post(`${this.baseUrl}/logout`, {}, { withCredentials: true }).subscribe({
@@ -67,4 +68,5 @@ private setSession(response: TokenResponse): void {
     tap(response => this.setSession(response))
   );
 }
+
 }

@@ -43,6 +43,10 @@ export class Upload {
       this.errorMessage.set('Please select an audio file.');
       return;
     }
+    if (file.size > 50 * 1024 * 1024) {
+  this.errorMessage.set('File is too large (max 50 MB).');
+  return;
+    }
 
     this.errorMessage.set(null);
     this.selectedFile.set(file);
@@ -52,6 +56,7 @@ export class Upload {
     const file = this.selectedFile();
     if (!file || this.form.invalid) return;
 
+   
     this.isUploading.set(true);
     this.errorMessage.set(null);
 
@@ -61,9 +66,10 @@ this.uploadProgress.set('Analyzing audio...');
 const { durationSeconds, peaks } = await this.sampleService.analyzeAudio(file);
 
       this.uploadProgress.set('Preparing upload...');
-      const presigned = await firstValueFrom(
-        this.sampleService.getPresignedUpload(file.name, file.type)
-      );
+       const presigned = await firstValueFrom(
+  this.sampleService.getPresignedUpload(file.name, file.type, file.size)
+  );
+
 
       this.uploadProgress.set('Uploading file...');
       await this.sampleService.uploadFileToR2(presigned.uploadUrl, file);
@@ -92,10 +98,10 @@ waveformPeaks: JSON.stringify(peaks),
 
       this.isUploading.set(false);
       this.router.navigate(['/dashboard']);
-    } catch (err) {
-      this.isUploading.set(false);
-      this.errorMessage.set('Upload failed. Please try again.');
-    }
+    } catch (err: any) {
+  this.isUploading.set(false);
+  this.errorMessage.set(err?.error?.message ?? 'Upload failed. Please try again.');
+}
   }
 }
 

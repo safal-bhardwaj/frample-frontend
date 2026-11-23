@@ -17,10 +17,9 @@ export class Sample {
   private http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/samples`;
 
-  getPresignedUpload(fileName: string, contentType: string): Observable<PresignedUploadResponse> {
-    return this.http.post<PresignedUploadResponse>(`${this.baseUrl}/presign-upload`, { fileName, contentType });
-  }
-
+getPresignedUpload(fileName: string, contentType: string, fileSizeBytes: number): Observable<PresignedUploadResponse> {
+  return this.http.post<PresignedUploadResponse>(`${this.baseUrl}/presign-upload`, { fileName, contentType, fileSizeBytes });
+}
   async uploadFileToR2(uploadUrl: string, file: File): Promise<void> {
     const response = await fetch(uploadUrl, {
       method: 'PUT',
